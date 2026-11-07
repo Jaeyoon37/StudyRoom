@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학습지 관리자 시스템</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      background-color: #f1f5f9;
+      color: #1e293b;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* 카드 스타일 */
+    .card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+    }
+
+    /* 로그인 폼 */
+    .login-box {
+      max-width: 420px;
+      margin: 80px auto;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 8px;
+      color: #0f172a;
+    }
+
+    .login-box p {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin-bottom: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    /* 헤더 컨트롤 바 */
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn {
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #1d4ed8;
+    }
+
+    .btn-success {
+      background-color: #16a34a;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background-color: #15803d;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #cbd5e1;
+      color: #475569;
+    }
+
+    .btn-outline:hover {
+      background-color: #f8fafc;
+    }
+
+    /* 테이블 영역 */
+    .table-container {
+      overflow-x: auto;
+      margin-top: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+      white-space: nowrap;
+    }
+
+    th {
+      background-color: #f8fafc;
+      color: #475569;
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background-color: #f8fafc;
+    }
+
+    .badge-count {
+      background-color: #e0e7ff;
+      color: #1d4ed8;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+    }
+
+    #authError {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 1. 로그인 뷰 -->
+    <div id="loginView" class="card login-box">
+      <h2>관리자 로그인</h2>
+      <p>확률 학습지 결과 조회를 위해 로그인하세요.</p>
+      
+      <div class="form-group">
+        <label for="adminEmail">관리자 이메일</label>
+        <input type="email" id="adminEmail" placeholder="teacher@school.kr">
+      </div>
+      <div class="form-group">
+        <label for="adminPassword">비밀번호</label>
+        <input type="password" id="adminPassword" placeholder="••••••••">
+      </div>
+      
+      <button id="btnLogin" class="btn btn-primary" style="width: 100%;">로그인</button>
+      <div id="authError"></div>
+    </div>
+
+    <!-- 2. 대시보드 뷰 (로그인 후 노출) -->
+    <div id="dashboardView" style="display: none;">
+      <div class="dashboard-header">
+        <div>
+          <h2>확률 학습지 제출 현황 <span id="recordCount" class="badge-count">0명</span></h2>
+          <span id="userBadge" style="font-size: 0.85rem; color: #64748b;"></span>
+        </div>
+        <div class="btn-group">
+          <button id="btnRefresh" class="btn btn-outline">새로고침</button>
+          <button id="btnDownloadCsv" class="btn btn-success">Excel/CSV 다운로드</button>
+          <button id="btnLogout" class="btn btn-outline">로그아웃</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>학년</th>
+                <th>반</th>
+                <th>번호</th>
+                <th>이름</th>
+                <th>1번(객)</th>
+                <th>2번(객)</th>
+                <th>3번(객)</th>
+                <th>4번(주)</th>
+                <th>5번(주)</th>
+                <th>6번(주)</th>
+                <th>제출일시</th>
+              </tr>
+            </thead>
+            <tbody id="dataTableBody">
+              <tr>
+                <td colspan="11" style="text-align: center; color: #94a3b8; padding: 30px;">
+                  데이터를 불러오는 중입니다...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-auth.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHJTFRezKZWWBLdaxKb1pTXhmG9NbnPQI",
+      authDomain: "studyroom-e52af.firebaseapp.com",
+      projectId: "studyroom-e52af",
+      storageBucket: "studyroom-e52af.firebasestorage.app",
+      messagingSenderId: "487827607470",
+      appId: "1:487827607470:web:cd7f8d7ca050e264c3023f",
+      measurementId: "G-B9WM7ZDZ93"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let cachedRecords = [];
+
+    // 인증 상태 감시
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = 'block';
+        document.getElementById('userBadge').textContent = `접속 계정: ${user.email}`;
+        loadSubmissions();
+      } else {
+        document.getElementById('loginView').style.display = 'block';
+        document.getElementById('dashboardView').style.display = 'none';
+      }
+    });
+
+    // 로그인 실행
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+      const email = document.getElementById('adminEmail').value.trim();
+      const password = document.getElementById('adminPassword').value.trim();
+      const errorDiv = document.getElementById('authError');
+      errorDiv.textContent = '';
+
+      if (!email || !password) {
+        errorDiv.textContent = '이메일과 비밀번호를 모두 입력하세요.';
+        return;
+      }
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (err) {
+        errorDiv.textContent = '로그인 실패: 아이디 또는 비밀번호를 확인해주세요.';
+      }
+    });
+
+    // 로그아웃
+    document.getElementById('btnLogout').addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    // 데이터 불러오기 함수
+    async function loadSubmissions() {
+      const tbody = document.getElementById('dataTableBody');
+      tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #94a3b8; padding: 30px;">데이터를 불러오는 중입니다...</td></tr>`;
+
+      try {
+        const q = query(collection(db, "worksheets_probability"), orderBy("submittedAt", "desc"));
+        const snapshot = await getDocs(q);
+
+        cachedRecords = [];
+        tbody.innerHTML = '';
+
+        if (snapshot.empty) {
+          tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #94a3b8; padding: 30px;">제출된 학습지가 없습니다.</td></tr>`;
+          document.getElementById('recordCount').textContent = '0명';
+          return;
+        }
+
+        document.getElementById('recordCount').textContent = `${snapshot.size}명`;
+
+        snapshot.forEach((doc) => {
+          const item = doc.data();
+          const student = item.student || {};
+          const answers = item.answers || {};
+
+          let dateStr = "-";
+          if (item.submittedAt && item.submittedAt.toDate) {
+            dateStr = item.submittedAt.toDate().toLocaleString('ko-KR');
+          }
+
+          const record = {
+            grade: student.grade ?? "",
+            classNum: student.classNum ?? "",
+            studentNum: student.studentNum ?? "",
+            name: student.name ?? "",
+            q1: answers.q1 ?? "",
+            q2: answers.q2 ?? "",
+            q3: answers.q3 ?? "",
+            q4: answers.q4 ?? "",
+            q5: answers.q5 ?? "",
+            q6: answers.q6 ?? "",
+            dateStr: dateStr
+          };
+
+          cachedRecords.push(record);
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${record.grade}</td>
+            <td>${record.classNum}</td>
+            <td>${record.studentNum}</td>
+            <td><strong>${record.name}</strong></td>
+            <td>${record.q1}</td>
+            <td>${record.q2}</td>
+            <td>${record.q3}</td>
+            <td>${record.q4}</td>
+            <td>${record.q5}</td>
+            <td>${record.q6}</td>
+            <td style="color: #64748b; font-size: 0.85rem;">${record.dateStr}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="11" style="text-align: center; color: #ef4444; padding: 30px;">데이터 조회 실패: ${err.message}</td></tr>`;
+      }
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', loadSubmissions);
+
+    // CSV 파일 다운로드 로직
+    document.getElementById('btnDownloadCsv').addEventListener('click', () => {
+      if (cachedRecords.length === 0) {
+        alert('다운로드할 제출 데이터가 없습니다.');
+        return;
+      }
+
+      const headers = ["학년", "반", "번호", "이름", "문제1", "문제2", "문제3", "문제4", "문제5", "문제6", "제출일시"];
+      const rows = [headers];
+
+      cachedRecords.forEach((r) => {
+        rows.push([
+          r.grade,
+          r.classNum,
+          r.studentNum,
+          `"${String(r.name).replace(/"/g, '""')}"`,
+          `"${String(r.q1).replace(/"/g, '""')}"`,
+          `"${String(r.q2).replace(/"/g, '""')}"`,
+          `"${String(r.q3).replace(/"/g, '""')}"`,
+          `"${String(r.q4).replace(/"/g, '""')}"`,
+          `"${String(r.q5).replace(/"/g, '""')}"`,
+          `"${String(r.q6).replace(/"/g, '""')}"`,
+          `"${r.dateStr}"`
+        ]);
+      });
+
+      // Excel 한글 깨짐 방지용 BOM(\uFEFF)
+      const csvString = "\uFEFF" + rows.map(row => row.join(",")).join("\n");
+      const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `확률학습지_결과_${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
