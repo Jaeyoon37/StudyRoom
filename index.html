@@ -1,21 +1,20 @@
-<!DOCTYPE html>
+html_content = """<!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StudyRoom - 6단원 경우의 수와 확률</title>
+  <title>StudyRoom 파일 브라우저</title>
   <style>
     :root {
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
       --bg: #f8fafc;
       --card-bg: #ffffff;
-      --text-main: #0f172a;
-      --text-sub: #475569;
       --border: #e2e8f0;
-      --badge-bg: #eff6ff;
-      --badge-text: #1d4ed8;
-      --hover-bg: #f1f5f9;
+      --text: #0f172a;
+      --muted: #64748b;
+      --folder-color: #f59e0b;
+      --file-color: #3b82f6;
     }
 
     * {
@@ -27,261 +26,434 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
       background-color: var(--bg);
-      color: var(--text-main);
-      line-height: 1.6;
-      padding: 36px 16px;
+      color: var(--text);
+      line-height: 1.5;
+      padding: 32px 16px;
     }
 
     .container {
-      max-width: 860px;
+      max-width: 900px;
       margin: 0 auto;
     }
 
-    .repo-header {
+    header {
       background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 24px 28px;
-      margin-bottom: 24px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
     }
 
-    .repo-badge {
+    .repo-tag {
       display: inline-block;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--badge-text);
-      background: var(--badge-bg);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: #eff6ff;
       padding: 3px 10px;
       border-radius: 9999px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
 
-    .repo-title {
-      font-size: 1.6rem;
+    h1 {
+      font-size: 1.5rem;
       font-weight: 700;
       display: flex;
       align-items: center;
       gap: 10px;
-      margin-bottom: 6px;
     }
 
-    .repo-desc {
-      color: var(--text-sub);
-      font-size: 0.95rem;
+    .desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 6px;
     }
 
-    .repo-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 12px;
-      font-size: 0.85rem;
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 500;
-    }
-
-    .repo-link:hover {
-      text-decoration: underline;
-    }
-
-    .card {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 22px 24px;
-      margin-bottom: 20px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    }
-
-    .card-title-row {
+    .nav-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 20px;
       margin-bottom: 16px;
-      padding-bottom: 12px;
-      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
     }
 
-    .card-title {
-      font-size: 1.2rem;
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .breadcrumb span.current {
+      color: var(--text);
       font-weight: 600;
-      color: var(--text-main);
+    }
+
+    .breadcrumb button {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 0;
+    }
+
+    .breadcrumb button:hover {
+      text-decoration: underline;
+    }
+
+    .browser-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+
+    .list-header {
+      background: #f1f5f9;
+      padding: 12px 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .item-list {
+      list-style: none;
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s ease;
+    }
+
+    .item-row:last-child {
+      border-bottom: none;
+    }
+
+    .item-row:hover {
+      background: #f8fafc;
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-grow: 1;
+      cursor: pointer;
       text-decoration: none;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+
+    .item-icon {
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+    }
+
+    .item-name {
+      word-break: break-all;
+    }
+
+    .item-actions {
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .card-title:hover {
-      color: var(--primary);
-    }
-
-    .folder-link-btn {
+    .btn {
       font-size: 0.8rem;
-      color: var(--text-sub);
+      font-weight: 600;
       text-decoration: none;
-      padding: 4px 10px;
+      padding: 5px 12px;
       border-radius: 6px;
-      background: #f1f5f9;
-      font-weight: 500;
-    }
-
-    .folder-link-btn:hover {
-      background: #e2e8f0;
-      color: var(--text-main);
-    }
-
-    .file-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .file-row {
-      display: flex;
+      transition: all 0.15s;
+      cursor: pointer;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 10px 14px;
-      background: #f8fafc;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      transition: background 0.15s ease, border-color 0.15s ease;
+      gap: 4px;
+      border: 1px solid transparent;
     }
 
-    .file-row:hover {
-      background: var(--hover-bg);
+    .btn-open {
+      color: var(--primary);
+      background: #eff6ff;
+      border-color: #bfdbfe;
+    }
+
+    .btn-open:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-view {
+      color: var(--muted);
+      background: #f1f5f9;
       border-color: #cbd5e1;
     }
 
-    .file-main {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      text-decoration: none;
-      color: var(--text-main);
-      font-size: 0.93rem;
-      font-weight: 500;
-      flex: 1;
+    .btn-view:hover {
+      background: #e2e8f0;
+      color: var(--text);
     }
 
-    .file-main:hover {
-      color: var(--primary);
+    .status-box {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
 
-    .file-icon {
-      font-size: 1.1rem;
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid var(--primary);
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px auto;
     }
 
-    .file-btn {
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--primary);
-      text-decoration: none;
-      padding: 4px 10px;
-      background: #ffffff;
-      border: 1px solid #bfdbfe;
-      border-radius: 6px;
-      white-space: nowrap;
-    }
-
-    .file-btn:hover {
-      background: var(--primary);
-      color: #ffffff;
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
 
     footer {
       text-align: center;
-      margin-top: 28px;
-      font-size: 0.85rem;
-      color: var(--text-sub);
+      margin-top: 24px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <header class="repo-header">
-      <span class="repo-badge">Jaeyoon37 / StudyRoom</span>
-      <h1 class="repo-title">📁 6단원. 경우의 수와 확률</h1>
-      <p class="repo-desc">저장소 내 6단원 학습 자료 및 파일 목록입니다. 각 폴더와 파일을 클릭하여 바로 열람할 수 있습니다.</p>
-      <a href="https://github.com/Jaeyoon37/StudyRoom" target="_blank" rel="noopener noreferrer" class="repo-link">
-        🔗 GitHub 저장소 바로가기 &rarr;
-      </a>
+    <header>
+      <span class="repo-tag" id="repo-tag">GitHub Pages Explorer</span>
+      <h1 id="page-title">📁 저장소 탐색기</h1>
+      <p class="desc" id="page-desc">저장소의 폴더와 파일을 자동으로 불러와 탐색합니다.</p>
     </header>
 
-    <!-- 6-1. 폴더 -->
-    <section class="card">
-      <div class="card-title-row">
-        <a href="./6-1/" class="card-title">
-          <span>📂</span> 6-1. 경우의 수
-        </a>
-        <a href="./6-1/" class="folder-link-btn">폴더 열기</a>
+    <div class="nav-bar">
+      <div class="breadcrumb" id="breadcrumb">
+        <span>📍 위치:</span>
+        <button onclick="navigateTo('')">루트(Home)</button>
       </div>
-      <ul class="file-list">
-        <!-- 업로드하신 실제 파일명과 경로에 맞게 수정하세요 -->
-        <li class="file-row">
-          <a href="./6-1/개념정리_경우의수.pdf" class="file-main">
-            <span class="file-icon">📄</span>
-            <span>개념정리_경우의수.pdf</span>
-          </a>
-          <a href="./6-1/개념정리_경우의수.pdf" class="file-btn">열기</a>
-        </li>
-        <li class="file-row">
-          <a href="./6-1/기본연습문제.hwp" class="file-main">
-            <span class="file-icon">📝</span>
-            <span>기본연습문제.hwp</span>
-          </a>
-          <a href="./6-1/기본연습문제.hwp" class="file-btn">열기</a>
-        </li>
-        <li class="file-row">
-          <a href="./6-1/실습예제.py" class="file-main">
-            <span class="file-icon">💻</span>
-            <span>실습예제.py</span>
-          </a>
-          <a href="./6-1/실습예제.py" class="file-btn">열기</a>
-        </li>
-      </ul>
-    </section>
+      <div>
+        <button class="btn btn-view" onclick="fetchContents(currentPath)">🔄 새로고침</button>
+      </div>
+    </div>
 
-    <!-- 6-2. 폴더 -->
-    <section class="card">
-      <div class="card-title-row">
-        <a href="./6-2/" class="card-title">
-          <span>📂</span> 6-2. 확률
-        </a>
-        <a href="./6-2/" class="folder-link-btn">폴더 열기</a>
+    <div class="browser-card">
+      <div class="list-header">
+        <span>이름</span>
+        <span>바로가기</span>
       </div>
-      <ul class="file-list">
-        <!-- 업로드하신 실제 파일명과 경로에 맞게 수정하세요 -->
-        <li class="file-row">
-          <a href="./6-2/개념정리_확률.pdf" class="file-main">
-            <span class="file-icon">📄</span>
-            <span>개념정리_확률.pdf</span>
-          </a>
-          <a href="./6-2/개념정리_확률.pdf" class="file-btn">열기</a>
-        </li>
-        <li class="file-row">
-          <a href="./6-2/유형별문제.hwp" class="file-main">
-            <span class="file-icon">📝</span>
-            <span>유형별문제.hwp</span>
-          </a>
-          <a href="./6-2/유형별문제.hwp" class="file-btn">열기</a>
-        </li>
-        <li class="file-row">
-          <a href="./6-2/확률시뮬레이션.py" class="file-main">
-            <span class="file-icon">💻</span>
-            <span>확률시뮬레이션.py</span>
-          </a>
-          <a href="./6-2/확률시뮬레이션.py" class="file-btn">열기</a>
-        </li>
+      <ul class="item-list" id="item-list">
+        <!-- 동적으로 목록 렌더링 -->
       </ul>
-    </section>
+      <div id="status" class="status-box">
+        <div class="spinner"></div>
+        <div>폴더 및 파일 목록을 불러오는 중입니다...</div>
+      </div>
+    </div>
 
     <footer>
-      <p>StudyRoom &copy; Jaeyoon37 &bull; GitHub Pages Index</p>
+      <p><a href="https://github.com/Jaeyoon37/StudyRoom" target="_blank" rel="noreferrer">Jaeyoon37/StudyRoom</a> &bull; GitHub Pages Index</p>
     </footer>
   </div>
+
+  <script>
+    // GitHub 사용자명 및 레파지토리명 설정
+    const OWNER = "Jaeyoon37";
+    const REPO = "StudyRoom";
+    
+    // 현재 열람 중인 상대 경로
+    let currentPath = "";
+
+    function getFileIcon(fileName, type) {
+      if (type === "dir") return "📁";
+      const ext = fileName.split('.').pop().toLowerCase();
+      switch (ext) {
+        case "pdf": return "📕";
+        case "hwp":
+        case "docx":
+        case "doc": return "📝";
+        case "xlsx":
+        case "xls":
+        case "csv": return "📊";
+        case "py":
+        case "js":
+        case "html":
+        case "css": return "💻";
+        case "jpg":
+        case "png":
+        case "gif": return "🖼️";
+        case "zip": return "🗜️";
+        default: return "📄";
+      }
+    }
+
+    function renderBreadcrumb(path) {
+      const breadcrumbEl = document.getElementById("breadcrumb");
+      breadcrumbEl.innerHTML = `<span>📍 위치:</span> <button onclick="navigateTo('')">루트</button>`;
+
+      if (!path) return;
+
+      const segments = path.split("/").filter(Boolean);
+      let cumulativePath = "";
+
+      segments.forEach((seg, idx) => {
+        cumulativePath += (cumulativePath ? "/" : "") + seg;
+        const encodedPath = encodeURIComponent(cumulativePath).replace(/%2F/g, "/");
+        if (idx === segments.length - 1) {
+          breadcrumbEl.innerHTML += ` <span>/</span> <span class="current">${decodeURIComponent(seg)}</span>`;
+        } else {
+          breadcrumbEl.innerHTML += ` <span>/</span> <button onclick="navigateTo('${encodedPath}')">${decodeURIComponent(seg)}</button>`;
+        }
+      });
+    }
+
+    async function fetchContents(path = "") {
+      const listEl = document.getElementById("item-list");
+      const statusEl = document.getElementById("status");
+      
+      listEl.innerHTML = "";
+      statusEl.style.display = "block";
+      statusEl.innerHTML = `<div class="spinner"></div><div>목록을 불러오는 중입니다...</div>`;
+
+      renderBreadcrumb(path);
+
+      const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${path}`;
+
+      try {
+        const res = await fetch(apiUrl);
+        if (!res.ok) {
+          throw new Error(`목록을 불러오지 못했습니다. (오류 코드: ${res.status})`);
+        }
+
+        const items = await res.json();
+        statusEl.style.display = "none";
+
+        if (!Array.isArray(items) || items.length === 0) {
+          statusEl.style.display = "block";
+          statusEl.innerHTML = "이 폴더에는 파일이 없습니다.";
+          return;
+        }
+
+        // 폴더 먼저 정렬 후 파일 정렬
+        items.sort((a, b) => {
+          if (a.type === b.type) return a.name.localeCompare(b.name);
+          return a.type === "dir" ? -1 : 1;
+        });
+
+        // 상위 폴더로 가기 버튼 (루트가 아닐 경우)
+        if (path) {
+          const parentSegments = path.split("/").filter(Boolean);
+          parentSegments.pop();
+          const parentPath = parentSegments.join("/");
+
+          const backLi = document.createElement("li");
+          backLi.className = "item-row";
+          backLi.innerHTML = `
+            <div class="item-info" onclick="navigateTo('${parentPath}')">
+              <span class="item-icon">⤴️</span>
+              <span class="item-name">.. (상위 폴더로 이동)</span>
+            </div>
+            <div class="item-actions">
+              <button class="btn btn-view" onclick="navigateTo('${parentPath}')">상위로</button>
+            </div>
+          `;
+          listEl.appendChild(backLi);
+        }
+
+        items.forEach(item => {
+          // 자기 자신(index.html)은 목록에서 건너뛰기
+          if (item.name.toLowerCase() === "index.html") return;
+
+          const li = document.createElement("li");
+          li.className = "item-row";
+          const icon = getFileIcon(item.name, item.type);
+
+          if (item.type === "dir") {
+            const nextPath = path ? `${path}/${item.name}` : item.name;
+            li.innerHTML = `
+              <div class="item-info" onclick="navigateTo('${encodeURIComponent(nextPath)}')">
+                <span class="item-icon">${icon}</span>
+                <span class="item-name">${item.name}</span>
+              </div>
+              <div class="item-actions">
+                <button class="btn btn-open" onclick="navigateTo('${encodeURIComponent(nextPath)}')">폴더 열기</button>
+              </div>
+            `;
+          } else {
+            // 파일 링크는 GitHub Pages 기준 상대 경로 또는 raw/html 링크로 연결
+            const fileHref = `./${item.path}`;
+            const isPreviewable = /\.(pdf|html|txt|png|jpg|jpeg|gif)$/i.test(item.name);
+            const actionLabel = isPreviewable ? "열기 / 보기" : "다운로드";
+
+            li.innerHTML = `
+              <a href="${fileHref}" class="item-info" target="_blank" rel="noreferrer">
+                <span class="item-icon">${icon}</span>
+                <span class="item-name">${item.name}</span>
+              </a>
+              <div class="item-actions">
+                <a href="${fileHref}" class="btn btn-open" target="_blank" rel="noreferrer">${actionLabel}</a>
+                <a href="${item.html_url}" class="btn btn-view" target="_blank" rel="noreferrer" title="GitHub에서 보기">GitHub</a>
+              </div>
+            `;
+          }
+
+          listEl.appendChild(li);
+        });
+
+      } catch (err) {
+        statusEl.style.display = "block";
+        statusEl.innerHTML = `<span style="color: #ef4444;">❌ ${err.message}</span><br><br><small>저장소가 Private(비공개)이거나 일시적으로 GitHub API 호출 제한에 걸렸을 수 있습니다.</small>`;
+      }
+    }
+
+    function navigateTo(path) {
+      currentPath = decodeURIComponent(path);
+      fetchContents(currentPath);
+    }
+
+    // 초기 실행
+    window.addEventListener("DOMContentLoaded", () => {
+      fetchContents("");
+    });
+  </script>
 </body>
 </html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(html_content)
+
+print("Generated index.html successfully.")
