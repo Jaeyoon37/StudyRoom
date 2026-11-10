@@ -33,6 +33,23 @@
     .flipping {
       animation: flipAnim 0.3s linear infinite;
     }
+    /* 세로 분수 표시용 스타일 */
+    .vertical-fraction {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      line-height: 1.1;
+      padding: 0 2px;
+      font-size: 0.9em;
+    }
+    .vertical-fraction .numerator {
+      border-bottom: 1.5px solid currentColor;
+      padding: 0 2px 1px 2px;
+    }
+    .vertical-fraction .denominator {
+      padding: 1px 2px 0 2px;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen">
@@ -76,16 +93,25 @@
                 <span class="text-xs font-semibold text-slate-400 block mb-1">관찰 대상 사건</span>
                 <span class="text-base font-bold text-slate-700">앞면 (Front)</span>
               </div>
-              <div class="text-right">
+              <div class="text-right flex flex-col items-end">
                 <span class="text-xs font-semibold text-slate-400 block mb-1">수학적 확률</span>
-                <span class="text-base font-extrabold text-indigo-600">1/2 (0.5000)</span>
+                <span class="text-base font-extrabold text-indigo-600 inline-flex items-center gap-1.5">
+                  <span class="vertical-fraction"><span class="numerator">1</span><span class="denominator">2</span></span>
+                  <span class="text-sm font-semibold text-indigo-400">(0.500)</span>
+                </span>
               </div>
             </div>
 
             <div id="diceTargetBox" class="hidden">
               <div class="flex items-center justify-between mb-2">
                 <label class="text-xs font-semibold text-slate-500">관찰할 주사위 눈 선택:</label>
-                <span class="text-xs font-extrabold text-indigo-600">수학적 확률: 1/6 (≈0.1667)</span>
+                <div class="text-right">
+                  <span class="text-xs font-semibold text-slate-400 block">수학적 확률</span>
+                  <span class="text-xs font-extrabold text-indigo-600 inline-flex items-center gap-1">
+                    <span class="vertical-fraction"><span class="numerator">1</span><span class="denominator">6</span></span>
+                    <span>(≈0.167)</span>
+                  </span>
+                </div>
               </div>
               <div class="grid grid-cols-6 gap-2">
                 <button type="button" class="dice-target-btn py-2 text-sm font-bold rounded-lg border border-indigo-600 bg-indigo-50 text-indigo-700 transition" data-target="1">1</button>
@@ -122,31 +148,16 @@
 
         <!-- 실행 제어 버튼 -->
         <div class="space-y-3 pt-2">
-          <div class="flex items-center justify-between text-xs text-slate-500 px-1">
-            <span>실행 속도:</span>
-            <div class="flex gap-2">
-              <label class="inline-flex items-center cursor-pointer">
-                <input type="radio" name="speed" value="fast" class="text-indigo-600 focus:ring-indigo-500" checked>
-                <span class="ml-1 text-xs">보통(과정 표시)</span>
-              </label>
-              <label class="inline-flex items-center cursor-pointer">
-                <input type="radio" name="speed" value="instant" class="text-indigo-600 focus:ring-indigo-500">
-                <span class="ml-1 text-xs">초고속(즉시)</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- 던지기 프리셋 버튼들 -->
-          <div class="grid grid-cols-4 gap-2">
+          <!-- 던지기 프리셋 버튼들 (+1000회 제거) -->
+          <div class="grid grid-cols-3 gap-2">
             <button class="btn-run py-2 px-1 text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition border border-indigo-200 active:scale-95" data-count="1">+1회</button>
             <button class="btn-run py-2 px-1 text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition border border-indigo-200 active:scale-95" data-count="10">+10회</button>
             <button class="btn-run py-2 px-1 text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition border border-indigo-200 active:scale-95" data-count="100">+100회</button>
-            <button class="btn-run py-2 px-1 text-sm font-semibold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-xl transition border border-indigo-200 active:scale-95" data-count="1000">+1,000회</button>
           </div>
 
           <!-- 사용자 지정 횟수 입력 -->
           <div class="flex gap-2">
-            <input type="number" id="customCount" placeholder="원하는 횟수 (예: 500)" min="1" max="50000" class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <input type="number" id="customCount" placeholder="원하는 횟수 (예: 50)" min="1" max="50000" class="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
             <button id="btnCustomRun" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-semibold transition active:scale-95 shadow-sm">
               실행
             </button>
@@ -168,8 +179,8 @@
         </div>
         <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-center">
           <span class="text-xs text-slate-500 font-medium">상대도수 (소수 / 분수)</span>
-          <p id="statRelativeFreq" class="text-2xl font-black text-emerald-600 mt-1">0.0000</p>
-          <p id="statRelativeFraction" class="text-xs font-semibold text-slate-400 mt-0.5 font-mono">-</p>
+          <p id="statRelativeFreq" class="text-2xl font-black text-emerald-600 mt-1">0.000</p>
+          <div id="statRelativeFraction" class="text-xs font-semibold text-indigo-600 mt-1 min-h-[1.75rem] flex items-center justify-center font-mono">-</div>
         </div>
       </div>
 
@@ -196,6 +207,7 @@
     </div>
 
     <!-- 누적 시행 결과 표 -->
+    <!-- 누적 시행 결과 표 (오차 컬럼 제외) -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
       <div class="px-5 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
         <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
@@ -212,12 +224,11 @@
               <th scope="col" class="py-3 px-4">상대도수 (소수)</th>
               <th scope="col" class="py-3 px-4">상대도수 (분수)</th>
               <th scope="col" class="py-3 px-4">수학적 확률</th>
-              <th scope="col" class="py-3 px-4">오차</th>
             </tr>
           </thead>
           <tbody id="resultTableBody" class="divide-y divide-slate-100">
             <tr>
-              <td colspan="6" class="py-8 text-center text-slate-400">아직 시행된 기록이 없습니다. 버튼을 눌러 실험을 시작하세요.</td>
+              <td colspan="5" class="py-8 text-center text-slate-400">아직 시행된 기록이 없습니다. 버튼을 눌러 실험을 시작하세요.</td>
             </tr>
           </tbody>
         </table>
@@ -390,7 +401,7 @@
             tooltip: {
               callbacks: {
                 label: function(context) {
-                  return `${context.dataset.label}: ${context.raw !== null ? Number(context.raw).toFixed(4) : '-'}`;
+                  return `${context.dataset.label}: ${context.raw !== null ? Number(context.raw).toFixed(3) : '-'}`;
                 }
               }
             }
@@ -399,28 +410,27 @@
       });
     }
 
-    // 상대도수를 직관적인 단위 분수 형태(약 1/2, 약 1/6 등)로 근사 표현하는 함수
-    function getApproxFraction(freq) {
-      if (freq <= 0) return '0';
-      if (freq >= 1) return '1';
+    // 상대도수를 세로 분수 HTML 형태로 근사 표현하는 함수
+    function getApproxFractionHTML(freq) {
+      if (freq <= 0) return '<span>0</span>';
+      if (freq >= 1) return '<span>1</span>';
 
-      // 1/1부터 1/12까지의 단위 분수 및 대표 분수들과 비교하여 가장 가까운 분수 산출
       const candidates = [
-        { label: '약 1/1', val: 1 },
-        { label: '약 5/6', val: 5 / 6 },
-        { label: '약 4/5', val: 4 / 5 },
-        { label: '약 3/4', val: 3 / 4 },
-        { label: '약 2/3', val: 2 / 3 },
-        { label: '약 3/5', val: 3 / 5 },
-        { label: '약 1/2', val: 1 / 2 },
-        { label: '약 2/5', val: 2 / 5 },
-        { label: '약 1/3', val: 1 / 3 },
-        { label: '약 1/4', val: 1 / 4 },
-        { label: '약 1/5', val: 1 / 5 },
-        { label: '약 1/6', val: 1 / 6 },
-        { label: '약 1/7', val: 1 / 7 },
-        { label: '약 1/8', val: 1 / 8 },
-        { label: '약 1/10', val: 1 / 10 }
+        { num: 1, den: 1, val: 1 },
+        { num: 5, den: 6, val: 5 / 6 },
+        { num: 4, den: 5, val: 4 / 5 },
+        { num: 3, den: 4, val: 3 / 4 },
+        { num: 2, den: 3, val: 2 / 3 },
+        { num: 3, den: 5, val: 3 / 5 },
+        { num: 1, den: 2, val: 1 / 2 },
+        { num: 2, den: 5, val: 2 / 5 },
+        { num: 1, den: 3, val: 1 / 3 },
+        { num: 1, den: 4, val: 1 / 4 },
+        { num: 1, den: 5, val: 1 / 5 },
+        { num: 1, den: 6, val: 1 / 6 },
+        { num: 1, den: 7, val: 1 / 7 },
+        { num: 1, den: 8, val: 1 / 8 },
+        { num: 1, den: 10, val: 1 / 10 }
       ];
 
       let closest = candidates[0];
@@ -434,45 +444,40 @@
         }
       }
 
-      // 오차가 0.0001 이하로 매우 일치하면 '1/2' 형태로, 아니면 '약 1/2' 형태로 표시
-      if (minDiff < 0.0001) {
-        return closest.label.replace('약 ', '');
-      }
-      return closest.label;
+      const prefix = minDiff < 0.001 ? '' : '약 ';
+      return `<span class="inline-flex items-center gap-0.5">${prefix}<span class="vertical-fraction"><span class="numerator">${closest.num}</span><span class="denominator">${closest.den}</span></span></span>`;
     }
 
-    // 요약 지표 카드 갱신
+    // 요약 지표 카드 갱신 (소수점 셋째 자리)
     function updateSummary(total, hits, freq) {
       statTotalCount.textContent = total.toLocaleString();
       statTargetCount.textContent = hits.toLocaleString();
-      statRelativeFreq.textContent = freq.toFixed(4);
+      statRelativeFreq.textContent = freq.toFixed(3);
       if (statRelativeFraction) {
         if (total === 0) {
           statRelativeFraction.textContent = '-';
         } else {
-          statRelativeFraction.textContent = getApproxFraction(freq);
+          statRelativeFraction.innerHTML = getApproxFractionHTML(freq);
         }
       }
     }
 
-    // 히스토리 기록 보관
+    // 히스토리 기록 보관 (오차 열 제거에 맞춤)
     function addHistoryRecord(total, hits, freq, theoretical) {
-      const error = Math.abs(freq - theoretical);
-      const approxFraction = getApproxFraction(freq);
+      const approxFractionHTML = getApproxFractionHTML(freq);
       historyRecords.push({
         n: total,
         hits: hits,
         relFreq: freq,
-        relFraction: approxFraction,
-        theoretical: theoretical,
-        error: error
+        relFractionHTML: approxFractionHTML,
+        theoretical: theoretical
       });
     }
 
-    // 테이블 렌더링 (최근 15개)
+    // 테이블 렌더링 (최근 15개, 오차 컬럼 제외 및 세로 분수)
     function renderTable() {
       if (historyRecords.length === 0) {
-        resultTableBody.innerHTML = `<tr><td colspan="6" class="py-8 text-center text-slate-400">아직 시행된 기록이 없습니다. 버튼을 눌러 실험을 시작하세요.</td></tr>`;
+        resultTableBody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-slate-400">아직 시행된 기록이 없습니다. 버튼을 눌러 실험을 시작하세요.</td></tr>`;
         return;
       }
 
@@ -480,15 +485,17 @@
       let html = '';
       displayList.forEach((row, idx) => {
         const isLatest = idx === 0;
-        const theoreticalFraction = currentMode === 'coin' ? '1/2' : '1/6';
+        const theoreticalFractionHTML = currentMode === 'coin'
+          ? '<span class="vertical-fraction"><span class="numerator">1</span><span class="denominator">2</span></span>'
+          : '<span class="vertical-fraction"><span class="numerator">1</span><span class="denominator">6</span></span>';
+
         html += `
           <tr class="${isLatest ? 'bg-indigo-50/50 font-semibold' : 'hover:bg-slate-50'} transition">
             <td class="py-3 px-4 font-mono">${row.n.toLocaleString()}</td>
             <td class="py-3 px-4 font-mono text-indigo-600">${row.hits.toLocaleString()}</td>
-            <td class="py-3 px-4 font-mono text-emerald-600 font-bold">${row.relFreq.toFixed(4)}</td>
-            <td class="py-3 px-4 font-mono font-bold text-indigo-700">${row.relFraction}</td>
-            <td class="py-3 px-4 font-mono text-slate-500">${theoreticalFraction} <span class="text-xs text-slate-400 font-normal">(${row.theoretical.toFixed(4)})</span></td>
-            <td class="py-3 px-4 font-mono text-rose-500">${row.error.toFixed(4)}</td>
+            <td class="py-3 px-4 font-mono text-emerald-600 font-bold">${row.relFreq.toFixed(3)}</td>
+            <td class="py-3 px-4 font-mono font-bold text-indigo-700">${row.relFractionHTML}</td>
+            <td class="py-3 px-4 font-mono text-slate-600 inline-flex items-center gap-1.5 py-4">${theoreticalFractionHTML} <span class="text-xs text-slate-400 font-normal">(${row.theoretical.toFixed(3)})</span></td>
           </tr>
         `;
       });
@@ -526,11 +533,10 @@
       chart.update();
     }
 
-    // 시뮬레이션 실행 코디네이터
+    // 시뮬레이션 실행 코디네이터 (초고속 모드 제거, 빠른 과정 애니메이션 단일화)
     function runSimulation(numThrows) {
       if (isRunning || numThrows <= 0) return;
 
-      const speed = document.querySelector('input[name="speed"]:checked').value;
       const theoretical = getTheoreticalProb();
 
       setControlsDisabled(true);
@@ -543,11 +549,17 @@
         diceVisual.classList.add('rolling');
       }
 
-      if (speed === 'instant') {
-        // 즉시 시뮬레이션 처리
+      // 과정 애니메이션을 동반한 분할 배치 실행
+      const steps = Math.min(25, numThrows);
+      const batchSize = Math.max(1, Math.floor(numThrows / steps));
+      let remaining = numThrows;
+
+      function stepExecute() {
+        const count = Math.min(batchSize, remaining);
         let hits = 0;
         let lastResult = '';
-        for (let i = 0; i < numThrows; i++) {
+
+        for (let i = 0; i < count; i++) {
           if (currentMode === 'coin') {
             const isHead = Math.random() < 0.5;
             if (isHead) hits++;
@@ -559,112 +571,55 @@
           }
         }
 
-        totalThrows += numThrows;
+        totalThrows += count;
         targetHits += hits;
+        remaining -= count;
+
         const currentFreq = targetHits / totalThrows;
+        const progressPercent = ((numThrows - remaining) / numThrows) * 100;
+        progressBar.style.width = `${progressPercent}%`;
 
-        // UI 즉각 갱신
-        if (currentMode === 'coin') {
-          coinVisual.classList.remove('flipping');
-          coinText.textContent = lastResult;
-          coinVisual.className = lastResult === '앞면'
-            ? 'w-20 h-20 rounded-full border-4 border-amber-400 bg-amber-300 flex items-center justify-center shadow-md'
-            : 'w-20 h-20 rounded-full border-4 border-slate-300 bg-slate-200 flex items-center justify-center shadow-md';
-          coinText.className = lastResult === '앞면' ? 'text-xl font-black text-amber-900' : 'text-xl font-black text-slate-700';
-          recentResultText.textContent = `+${numThrows.toLocaleString()}회 완료! 마지막 결과: [${lastResult}]`;
-        } else {
-          diceVisual.classList.remove('rolling');
-          const lastNum = parseInt(lastResult, 10);
-          diceIcon.className = `fa-solid ${diceIcons[lastNum]} text-4xl ${lastNum === diceTarget ? 'text-indigo-600' : 'text-slate-600'}`;
-          recentResultText.textContent = `+${numThrows.toLocaleString()}회 완료! 마지막 눈: [${lastResult}]`;
-        }
-
-        progressBar.style.width = '100%';
+        // 중간 갱신
         updateSummary(totalThrows, targetHits, currentFreq);
-        addHistoryRecord(totalThrows, targetHits, currentFreq, theoretical);
-        renderTable();
-        updateChart(currentFreq);
-
-        setTimeout(() => {
-          progressBarContainer.classList.add('hidden');
-          progressBar.style.width = '0%';
-          setControlsDisabled(false);
-          isRunning = false;
-        }, 150);
-
-      } else {
-        // 과정 애니메이션을 동반한 분할 배치 실행
-        const steps = Math.min(25, numThrows);
-        const batchSize = Math.max(1, Math.floor(numThrows / steps));
-        let remaining = numThrows;
-
-        function stepExecute() {
-          const count = Math.min(batchSize, remaining);
-          let hits = 0;
-          let lastResult = '';
-
-          for (let i = 0; i < count; i++) {
-            if (currentMode === 'coin') {
-              const isHead = Math.random() < 0.5;
-              if (isHead) hits++;
-              lastResult = isHead ? '앞면' : '뒷면';
-            } else {
-              const roll = Math.floor(Math.random() * 6) + 1;
-              if (roll === diceTarget) hits++;
-              lastResult = `${roll}`;
-            }
-          }
-
-          totalThrows += count;
-          targetHits += hits;
-          remaining -= count;
-
-          const currentFreq = targetHits / totalThrows;
-          const progressPercent = ((numThrows - remaining) / numThrows) * 100;
-          progressBar.style.width = `${progressPercent}%`;
-
-          // 중간 갱신
-          updateSummary(totalThrows, targetHits, currentFreq);
-          if (currentMode === 'coin') {
-            coinText.textContent = lastResult;
-          } else {
-            diceIcon.className = `fa-solid ${diceIcons[parseInt(lastResult, 10)]} text-4xl text-indigo-600`;
-          }
-          recentResultText.textContent = `실험 진행 중... (${(numThrows - remaining).toLocaleString()} / ${numThrows.toLocaleString()})`;
-
-          if (remaining > 0) {
-            requestAnimationFrame(() => setTimeout(stepExecute, 18));
-          } else {
-            // 실행 종료 처리
-            if (currentMode === 'coin') {
-              coinVisual.classList.remove('flipping');
-              coinVisual.className = lastResult === '앞면'
-                ? 'w-20 h-20 rounded-full border-4 border-amber-400 bg-amber-300 flex items-center justify-center shadow-md'
-                : 'w-20 h-20 rounded-full border-4 border-slate-300 bg-slate-200 flex items-center justify-center shadow-md';
-              coinText.className = lastResult === '앞면' ? 'text-xl font-black text-amber-900' : 'text-xl font-black text-slate-700';
-              recentResultText.textContent = `완료! 총 ${numThrows.toLocaleString()}회 던짐`;
-            } else {
-              diceVisual.classList.remove('rolling');
-              const finalNum = parseInt(lastResult, 10);
-              diceIcon.className = `fa-solid ${diceIcons[finalNum]} text-4xl ${finalNum === diceTarget ? 'text-indigo-600' : 'text-slate-600'}`;
-              recentResultText.textContent = `완료! 총 ${numThrows.toLocaleString()}회 던짐`;
-            }
-
-            addHistoryRecord(totalThrows, targetHits, currentFreq, theoretical);
-            renderTable();
-            updateChart(currentFreq);
-
-            setTimeout(() => {
-              progressBarContainer.classList.add('hidden');
-              progressBar.style.width = '0%';
-              setControlsDisabled(false);
-              isRunning = false;
-            }, 100);
-          }
+        if (currentMode === 'coin') {
+          coinText.textContent = lastResult;
+        } else {
+          diceIcon.className = `fa-solid ${diceIcons[parseInt(lastResult, 10)]} text-4xl text-indigo-600`;
         }
+        recentResultText.textContent = `실험 진행 중... (${(numThrows - remaining).toLocaleString()} / ${numThrows.toLocaleString()})`;
 
-        stepExecute();
+        if (remaining > 0) {
+          requestAnimationFrame(() => setTimeout(stepExecute, 18));
+        } else {
+          // 실행 종료 처리
+          if (currentMode === 'coin') {
+            coinVisual.classList.remove('flipping');
+            coinVisual.className = lastResult === '앞면'
+              ? 'w-20 h-20 rounded-full border-4 border-amber-400 bg-amber-300 flex items-center justify-center shadow-md'
+              : 'w-20 h-20 rounded-full border-4 border-slate-300 bg-slate-200 flex items-center justify-center shadow-md';
+            coinText.className = lastResult === '앞면' ? 'text-xl font-black text-amber-900' : 'text-xl font-black text-slate-700';
+            recentResultText.textContent = `완료! 총 ${numThrows.toLocaleString()}회 던짐`;
+          } else {
+            diceVisual.classList.remove('rolling');
+            const finalNum = parseInt(lastResult, 10);
+            diceIcon.className = `fa-solid ${diceIcons[finalNum]} text-4xl ${finalNum === diceTarget ? 'text-indigo-600' : 'text-slate-600'}`;
+            recentResultText.textContent = `완료! 총 ${numThrows.toLocaleString()}회 던짐`;
+          }
+
+          addHistoryRecord(totalThrows, targetHits, currentFreq, theoretical);
+          renderTable();
+          updateChart(currentFreq);
+
+          setTimeout(() => {
+            progressBarContainer.classList.add('hidden');
+            progressBar.style.width = '0%';
+            setControlsDisabled(false);
+            isRunning = false;
+          }, 100);
+        }
       }
+
+      stepExecute();
     }
 
     // 컨트롤 버튼 비활성화/활성화 토글
